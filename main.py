@@ -1,38 +1,16 @@
-import requests
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
+import time
 
-all_jobs = []
+p = sync_playwright().start()  # 초기화
 
+browser = p.chromium.launch(
+    headless=False
+)  # 크로미움 브라우저 실행. headless mode가 True라면 브라우저가 보이지 않는다.
 
-def scrape_page(url):
-    print(f"Scrapping {url}...")
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, "html.parser")
-    jobs = soup.find("section", class_="jobs").find_all("li")[1:-1]
-    for job in jobs:
-        title = job.find("span", class_="title").text
-        company, position, region = job.find_all("span", class_="company")
-        url = job.find("div", class_="tooltip").next_sibling["href"]
-        job_data = {
-            "title": title,
-            "company": company.text,
-            "position": position.text,
-            "region": region.text,
-            "url": f"https://weworkremotely.com/{url}",
-        }
-        all_jobs.append(job_data)
+page = browser.new_page()  # 브라우저 새창 열기
 
+page.goto("https://www.wanted.co.kr/jobsfeed")  # 해당 url로 이동
 
-def get_pages(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, "html.parser")
-    return len(soup.find("div", class_="pagination").find_all("span", class_="page"))
+time.sleep(7)
 
-
-total_pages = get_pages("https://weworkremotely.com/remote-full-time-jobs?page=1")
-
-for x in range(total_pages):
-    url = f"https://weworkremotely.com/remote-full-time-jobs?page={x+1}"
-    scrape_page(url)
-
-print(len(all_jobs))
+page.screenshot(path="screenshot.png")  # 페이지 스크린샷 찍기
