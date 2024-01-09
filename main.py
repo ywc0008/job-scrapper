@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 import time
 from bs4 import BeautifulSoup
+import csv
 
 p = sync_playwright().start()  # 초기화
 
@@ -11,7 +12,7 @@ browser = p.chromium.launch(
 page = browser.new_page()  # 브라우저 새창 열기
 
 page.goto("https://www.wanted.co.kr/search?query=flutter&tab=position")  # 해당 url로 이동
-# time.sleep(5)
+time.sleep(5)
 
 # page.click("button.Aside_searchButton__Xhqq3")
 # time.sleep(5)
@@ -54,5 +55,10 @@ for job in jobs:
     }
     jobs_db.append(job)
 
-print(jobs_db)
-print(len(jobs_db))
+
+file = open("jobs.csv", "w")  # 파일 열여주는 명령어지만 파일이 없으면 만들어줌/ r은 읽기모드 w는 수정모드
+writer = csv.writer(file)
+writer.writerow(["Title", "Company", "Location", "Reward", "Link"])
+for job in jobs_db:
+    writer.writerow(job.values())
+file.close()
